@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>사서 햄스터 햄북이</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: DungGeunMo for retro pixel vibe -->
+    <link href="https://fonts.googleapis.com/css2?family=DungGeunMo&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'DungGeunMo', monospace;
+            background: linear-gradient(135deg, #fbcfe8 0%, #e0e7ff 100%);
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+        .pixel-box {
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+            border: 3px solid #1f2937;
+        }
+        .pixel-btn {
+            box-shadow: 0 4px 0 #1f2937;
+            transition: all 0.1s ease;
+            cursor: pointer;
+        }
+        .pixel-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #1f2937;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes bounce-short {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+        .animate-float {
+            animation: float 2.5s ease-in-out infinite;
+        }
+        .animate-bounce-short {
+            animation: bounce-short 0.6s ease-in-out infinite;
+        }
+        .animate-shake {
+            animation: shake 0.3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-3">
+
+    <!-- 메인 컨테이너 -->
+    <div class="w-full max-w-sm bg-amber-50 rounded-3xl p-4 pixel-box flex flex-col items-center relative overflow-hidden">
+        
+        <!-- 상단 헤더: 이름 및 레벨 -->
+        <div class="w-full flex justify-between items-center mb-3 bg-white/80 p-3 rounded-xl border-2 border-gray-800">
+            <div>
+                <h1 id="pet-name" class="text-base font-bold text-gray-800">햄북이 (Ham-book-i)</h1>
+                <p id="pet-stage" class="text-xs text-purple-600 font-bold">LV.1 아기 햄스터</p>
+            </div>
+            <div class="text-right">
+                <span id="game-time" class="text-[11px] text-gray-500">성장: 0분</span>
+                <div id="coin-display" class="text-xs font-bold text-amber-600">🪙 100G</div>
+            </div>
+        </div>
+
+        <!-- 상태 게이지 바 섹션 -->
+        <div class="w-full space-y-1.5 mb-3 bg-white/60 p-2.5 rounded-xl border-2 border-gray-800">
+            <!-- 포만감 -->
+            <div>
+                <div class="flex justify-between text-[11px] font-bold text-gray-700 mb-0.5">
+                    <span>🍖 포만감</span>
+                    <span id="hunger-val">80%</span>
+                </div>
+                <div class="w-full bg-gray-200 h-2 rounded-full border-2 border-gray-800 overflow-hidden">
+                    <div id="hunger-bar" class="bg-red-400 h-full transition-all duration-300" style="width: 80%"></div>
+                </div>
+            </div>
+            <!-- 행복도 -->
+            <div>
+                <div class="flex justify-between text-[11px] font-bold text-gray-700 mb-0.5">
+                    <span>⭐ 행복도</span>
+                    <span id="happiness-val">80%</span>
+                </div>
+                <div class="w-full bg-gray-200 h-2 rounded-full border-2 border-gray-800 overflow-hidden">
+                    <div id="happiness-bar" class="bg-yellow-400 h-full transition-all duration-300" style="width: 80%"></div>
+                </div>
+            </div>
+            <!-- 에너지 -->
+            <div>
+                <div class="flex justify-between text-[11px] font-bold text-gray-700 mb-0.5">
+                    <span>⚡ 에너지</span>
+                    <span id="energy-val">80%</span>
+                </div>
+                <div class="w-full bg-gray-200 h-2 rounded-full border-2 border-gray-800 overflow-hidden">
+                    <div id="energy-bar" class="bg-blue-400 h-full transition-all duration-300" style="width: 80%"></div>
+                </div>
+            </div>
+            <!-- 청결도 -->
+            <div>
+                <div class="flex justify-between text-[11px] font-bold text-gray-700 mb-0.5">
+                    <span>✨ 청결도</span>
+                    <span id="clean-val">100%</span>
+                </div>
+                <div class="w-full bg-gray-200 h-2 rounded-full border-2 border-gray-800 overflow-hidden">
+                    <div id="clean-bar" class="bg-green-400 h-full transition-all duration-300" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 캐릭터 디스플레이 화면 (도서관 룸) -->
+        <div id="room-container" class="w-full h-56 bg-amber-100 rounded-2xl border-4 border-gray-800 relative flex flex-col items-center justify-center mb-3 overflow-hidden transition-colors duration-500">
+            <!-- 배경 도서관 책장 데코레이션 -->
+            <div class="absolute top-2 left-3 text-[10px] font-bold text-amber-800 opacity-60">📚 📖 📗 📘</div>
+            <div class="absolute top-2 right-3 text-[10px] font-bold text-amber-800 opacity-60">📙 📚 📕 📖</div>
+            <div id="room-effect" class="absolute inset-0 pointer-events-none flex items-center justify-center text-3xl z-20"></div>
+
+            <!-- 청소 아이템 영역 -->
+            <div id="poop-zone" class="absolute bottom-2 left-3 flex space-x-1 z-10"></div>
+
+            <!-- 캐릭터 본체 -->
+            <div id="character-wrapper" class="relative flex flex-col items-center animate-float cursor-pointer z-10 mt-4" onclick="pokePet()">
+                
+                <!-- 말풍선 -->
+                <div id="speech-bubble" class="absolute -top-11 bg-white px-2.5 py-0.5 rounded-full border-2 border-gray-800 text-[11px] font-bold shadow-md whitespace-nowrap z-30">
+                    안녕! 책 읽으러 가자~ 📚
+                </div>
+                
+                <!-- 캐릭터 그래픽 (SVG) -->
+                <div id="pet-svg-container" class="w-32 h-32 flex items-center justify-center z-10 relative">
+                    
+                    <!-- 캐릭터 좌측 하단에 고유한 책 제목들만 차곡차곡 쌓이는 책더미 영역 -->
+                    <div id="stacked-books-zone" class="absolute -left-9 bottom-0 flex flex-col-reverse items-start space-y-reverse space-y-[-7px] z-30 pointer-events-none">
+                    </div>
+
+                    <svg id="pet-svg" viewBox="0 0 120 120" class="w-full h-full drop-shadow-md">
+                        <!-- 귀 -->
+                        <circle cx="35" cy="35" r="16" fill="#d97706" stroke="#1f2937" stroke-width="3"/>
+                        <circle cx="35" cy="35" r="9" fill="#fbcfe8"/>
+                        <circle cx="85" cy="35" r="16" fill="#d97706" stroke="#1f2937" stroke-width="3"/>
+                        <circle cx="85" cy="35" r="9" fill="#fbcfe8"/>
+
+                        <!-- 몸체 -->
+                        <ellipse cx="60" cy="70" rx="35" ry="32" fill="#fbbf24" stroke="#1f2937" stroke-width="3"/>
+                        <!-- 배 패치 -->
+                        <ellipse cx="60" cy="75" rx="24" ry="20" fill="#fef3c7"/>
+
+                        <!-- 볼 홍조 -->
+                        <circle cx="40" cy="70" r="5" fill="#f43f5e" opacity="0.6"/>
+                        <circle cx="80" cy="70" r="5" fill="#f43f5e" opacity="0.6"/>
+
+                        <!-- 눈 -->
+                        <circle cx="48" cy="62" r="4" fill="#1f2937"/>
+                        <circle cx="72" cy="62" r="4" fill="#1f2937"/>
+                        <circle cx="46" cy="60" r="1.5" fill="#ffffff"/>
+                        <circle cx="70" cy="60" r="1.5" fill="#ffffff"/>
+
+                        <!-- 코 및 입 -->
+                        <ellipse cx="60" cy="68" rx="3" ry="2" fill="#1f2937"/>
+                        <path id="pet-mouth" d="M55,73 Q60,78 65,73" fill="none" stroke="#1f2937" stroke-width="2.5" stroke-linecap="round"/>
+
+                        <!-- 레벨별 장신구 그룹 -->
+                        <g id="acc-glasses" style="display: none;">
+                            <rect x="38" y="53" width="18" height="14" rx="3" fill="none" stroke="#1f2937" stroke-width="2.5"/>
+                            <rect x="64" y="53" width="18" height="14" rx="3" fill="none" stroke="#1f2937" stroke-width="2.5"/>
+                            <line x1="56" y1="60" x2="64" y2="60" stroke="#1f2937" stroke-width="2.5"/>
+                        </g>
+
+                        <g id="acc-hat-book" style="display: none;">
+                            <polygon points="42,30 78,30 83,40 37,40" fill="#4f46e5" stroke="#1f2937" stroke-width="2.5"/>
+                            <rect x="32" y="40" width="56" height="5" rx="2" fill="#4f46e5" stroke="#1f2937" stroke-width="2.5"/>
+                            <path d="M42,92 L60,82 L78,92 L60,102 Z" fill="#ef4444" stroke="#1f2937" stroke-width="2"/>
+                            <line x1="60" y1="82" x2="60" y2="102" stroke="#1f2937" stroke-width="2"/>
+                        </g>
+
+                        <g id="acc-crown" style="display: none;">
+                            <polygon points="45,26 50,12 60,22 70,12 75,26" fill="#fbbf24" stroke="#1f2937" stroke-width="2.5"/>
+                            <circle cx="50" cy="16" r="2" fill="#ef4444"/>
+                            <circle cx="60" cy="20" r="2" fill="#3b82f6"/>
+                            <circle cx="70" cy="16" r="2" fill="#10b981"/>
+                            <text x="22" y="50" font-size="14">✨</text>
+                            <text x="85" y="50" font-size="14">✨</text>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 상태 메시지 알림 배너 -->
+            <div id="status-alert" class="absolute bottom-2 bg-amber-200/95 border border-amber-500 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-amber-900 hidden z-20">
+                햄북이가 배고파해요!
+            </div>
+        </div>
+
+        <!-- 상호작용 액션 버튼들 -->
+        <div class="grid grid-cols-4 gap-1.5 w-full mb-3">
+            <button onclick="feedPet()" class="pixel-btn bg-red-300 hover:bg-red-400 text-gray-800 font-bold py-2 px-1 rounded-xl border-2 border-gray-800 text-[11px] flex flex-col items-center justify-center">
+                <span class="text-sm">🍖</span>
+                간식주기
+            </button>
+            <button onclick="playWithPet()" class="pixel-btn bg-yellow-300 hover:bg-yellow-400 text-gray-800 font-bold py-2 px-1 rounded-xl border-2 border-gray-800 text-[11px] flex flex-col items-center justify-center">
+                <span class="text-sm">📚</span>
+                책읽기
+            </button>
+            <button onclick="sleepPet()" class="pixel-btn bg-blue-300 hover:bg-blue-400 text-gray-800 font-bold py-2 px-1 rounded-xl border-2 border-gray-800 text-[11px] flex flex-col items-center justify-center">
+                <span class="text-sm">💤</span>
+                재우기
+            </button>
+            <button onclick="cleanPet()" class="pixel-btn bg-green-300 hover:bg-green-400 text-gray-800 font-bold py-2 px-1 rounded-xl border-2 border-gray-800 text-[11px] flex flex-col items-center justify-center">
+                <span class="text-sm">✨</span>
+                청소하기
+            </button>
+        </div>
+
+        <!-- 독서 감상평 & 코인벌기 섹션 -->
+        <div class="w-full bg-white/70 p-2.5 rounded-xl border-2 border-gray-800 mb-2">
+            <h2 class="text-[11px] font-bold text-gray-800 mb-1.5 flex items-center justify-between">
+                <span>📚 독서 감상평 쓰고 코인 받기 (+10G)</span>
+                <span class="text-[9px] text-purple-600 font-normal">제목별 모아보기</span>
+            </h2>
+            <div class="flex flex-col gap-1.5 mb-1.5">
+                <input type="text" id="book-title-input" placeholder="읽은 책 제목" class="w-full px-2.5 py-1.5 text-xs border-2 border-gray-800 rounded-lg focus:outline-none bg-white">
+                <input type="text" id="book-review-input" placeholder="한 줄 감상평을 남겨주세요!" class="w-full px-2.5 py-1.5 text-xs border-2 border-gray-800 rounded-lg focus:outline-none bg-white" onkeypress="if(event.key==='Enter') submitReview()">
+            </div>
+            <button onclick="submitReview()" class="w-full pixel-btn bg-purple-300 hover:bg-purple-400 text-gray-800 font-bold py-1.5 rounded-lg border-2 border-gray-800 text-xs mb-1.5">
+                감상평 작성하고 코인 받기 🪙
+            </button>
+            
+            <!-- 책 제목별 묶인 감상평 목록 컨테이너 -->
+            <div class="max-h-24 overflow-y-auto text-xs text-gray-600 space-y-1 bg-white/50 p-2 rounded-lg border border-gray-300" id="review-list-container">
+                <p class="text-gray-400 italic text-center">아직 작성된 독서 감상평이 없어요.</p>
+            </div>
+        </div>
+
+        <!-- 하단 초기화 버튼 -->
+        <div class="flex gap-2 w-full justify-end">
+            <button onclick="resetGame()" class="pixel-btn bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-1 px-2.5 rounded-xl border-2 border-gray-800 text-[10px]">
+                🔄 데이터 초기화
+            </button>
+        </div>
+
+    </div>
+
+    <!-- 커스텀 메시지 박스 -->
+    <div id="msg-box" class="fixed inset-0 bg-black/40 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl p-4 pixel-box max-w-xs w-full text-center">
+            <p id="msg-text" class="text-xs font-bold text-gray-800 mb-3">알림 메시지 내용</p>
+            <button onclick="closeMsgBox()" class="pixel-btn bg-amber-300 hover:bg-amber-400 font-bold px-4 py-1.5 rounded-xl border-2 border-gray-800 text-xs">확인</button>
+        </div>
+    </div>
+
+    <!-- JavaScript 로직 -->
+    <script>
+        const STORAGE_KEY = 'LIBRARY_HAMSTER_HAMBUKI_V2';
+        
+        let pet = {
+            name: "햄북이",
+            level: 1,         
+            hunger: 80,       
+            happiness: 80,    
+            energy: 80,       
+            cleanliness: 100, 
+            coins: 100,       
+            ageSeconds: 0,    
+            isSleeping: false,
+            isSick: false,
+            isStunted: false, // 성장 정지 상태 여부
+            poopCount: 0,     
+            lastSavedTime: Date.now(), 
+            reviews: []       
+        };
+
+        const stages = [
+            { level: 1, title: "LV.1 아기 햄스터" },
+            { level: 2, title: "LV.2 꼬마 사서 햄스터" },
+            { level: 3, title: "LV.3 모범 사서 햄스터" },
+            { level: 4, title: "LV.4 대도서관 마스터" }
+        ];
+
+        let openBooks = {};
+
+        // 4가지 스탯 중 2개 이상이 20% 이하인지 확인하는 함수
+        function checkGrowthCondition(showAlertOnTrigger = false) {
+            let lowStats = 0;
+            if (pet.hunger <= 20) lowStats++;
+            if (pet.happiness <= 20) lowStats++;
+            if (pet.energy <= 20) lowStats++;
+            if (pet.cleanliness <= 20) lowStats++;
+
+            const wasStunted = pet.isStunted;
+            pet.isStunted = (lowStats >= 2);
+
+            // 방금 성장 정지 상태에 돌입했다면 팝업 경고 띄우기
+            if (pet.isStunted && !wasStunted && showAlertOnTrigger) {
+                showMsg("⚠️ 포만감, 행복도, 에너지, 청결도 중 2개 이상이 20%까지 떨어져서 성장을 하지 못해요! 상태를 회복시켜 주세요.");
+            }
+        }
+
+        function loadGameData() {
+            const savedData = localStorage.getItem(STORAGE_KEY);
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    pet = { ...pet, ...parsed };
+
+                    const now = Date.now();
+                    const elapsedSeconds = Math.floor((now - pet.lastSavedTime) / 1000);
+
+                    if (elapsedSeconds > 5) {
+                        applyOfflineDecay(elapsedSeconds);
+                    }
+                    checkGrowthCondition(false);
+                } catch (e) {
+                    console.error("데이터 로드 실패:", e);
+                }
+            }
+        }
+
+        function applyOfflineDecay(seconds) {
+            const ticks = Math.floor(seconds / 3);
+            if (ticks <= 0) return;
+
+            // 오프라인 틱 단위로 시뮬레이션하여 2개 이상 20% 이하가 된 시점부터 성장 시간 정지
+            let grownSeconds = 0;
+            for (let i = 0; i < ticks; i++) {
+                if (pet.isSleeping) {
+                    pet.energy = Math.min(100, pet.energy + 5);
+                    pet.hunger = Math.max(0, pet.hunger - 0.5);
+                } else {
+                    pet.hunger = Math.max(0, pet.hunger - 2);
+                    pet.happiness = Math.max(0, pet.happiness - 1);
+                    pet.energy = Math.max(0, pet.energy - 1.5);
+                    pet.cleanliness = Math.max(0, pet.cleanliness - 0.5);
+                }
+
+                let lowCount = 0;
+                if (pet.hunger <= 20) lowCount++;
+                if (pet.happiness <= 20) lowCount++;
+                if (pet.energy <= 20) lowCount++;
+                if (pet.cleanliness <= 20) lowCount++;
+
+                if (lowCount < 2) {
+                    grownSeconds += 3;
+                }
+            }
+
+            if (!pet.isSleeping) {
+                const additionalPoops = Math.min(3 - pet.poopCount, Math.floor(ticks * 0.05));
+                if (additionalPoops > 0) {
+                    pet.poopCount += additionalPoops;
+                    pet.cleanliness = Math.max(0, pet.cleanliness - (additionalPoops * 10));
+                }
+            }
+
+            pet.ageSeconds += grownSeconds;
+            checkGrowthCondition(false);
+            
+            let calculatedLevel = 1 + Math.floor(pet.ageSeconds / 600);
+            if (calculatedLevel > 4) calculatedLevel = 4;
+            if (calculatedLevel > pet.level) {
+                const oldLevel = pet.level;
+                pet.level = calculatedLevel;
+                if (pet.level === 4 && oldLevel < 4) {
+                    showMsg("🏆 [축하합니다!] 햄북이가 최고 등급인 'LV.4 대도서관 마스터'로 최종 진화했습니다! 👑✨");
+                    return;
+                }
+            }
+
+            if (pet.isStunted) {
+                showMsg("⚠️ 오프라인 동안 상태가 나빠져 성장을 하지 못하고 멈춰있어요! 얼른 돌봐주세요.");
+            } else {
+                showMsg(`오프라인 동안 시간이 흘렀어요! 햄북이가 무사히 기다리고 있었습니다.`);
+            }
+        }
+
+        function saveGameData() {
+            pet.lastSavedTime = Date.now();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(pet));
+        }
+
+        const hungerBar = document.getElementById('hunger-bar');
+        const happinessBar = document.getElementById('happiness-bar');
+        const energyBar = document.getElementById('energy-bar');
+        const cleanBar = document.getElementById('clean-bar');
+        
+        const hungerVal = document.getElementById('hunger-val');
+        const happinessVal = document.getElementById('happiness-val');
+        const energyVal = document.getElementById('energy-val');
+        const cleanVal = document.getElementById('clean-val');
+
+        const coinDisplay = document.getElementById('coin-display');
+        const gameTimeDisplay = document.getElementById('game-time');
+        const speechBubble = document.getElementById('speech-bubble');
+        const characterWrapper = document.getElementById('character-wrapper');
+        const roomContainer = document.getElementById('room-container');
+        const roomEffect = document.getElementById('room-effect');
+        const statusAlert = document.getElementById('status-alert');
+        const poopZone = document.getElementById('poop-zone');
+
+        const petMouth = document.getElementById('pet-mouth');
+        const reviewListContainer = document.getElementById('review-list-container');
+        const petStageDisplay = document.getElementById('pet-stage');
+        const stackedBooksZone = document.getElementById('stacked-books-zone');
+
+        function showMsg(text) {
+            document.getElementById('msg-text').innerText = text;
+            document.getElementById('msg-box').classList.remove('hidden');
+        }
+        function closeMsgBox() {
+            document.getElementById('msg-box').classList.add('hidden');
+        }
+
+        const dialogues = {
+            normal: ["안녕! 책 읽으러 가자~ 📚", "오늘도 도서관은 평화로워요.", "어떤 책을 읽어볼까?", "감상평 쓰고 코인 받아가세요!"],
+            hungry: ["배고파서 책장이 안 넘어가... 🍖", "도서관 매점 간식 사주세요!"],
+            sleepy: ["하아암... 졸린 사서 햄북이 💤", "꾸벅꾸벅... 잠이 온다..."],
+            unhappy: ["재미있는 책이 읽고 싶어 💧", "심심해요 햄북이와 놀아주세요."],
+            sick: ["콜록콜록... 감기에 걸렸어요 🤒", "도움이 필요해요..."],
+            clean: ["책 먼지가 날려요! 청소해줘 🧹"],
+            stunted: ["힘이 없어서 성장이 멈췄어... 😢", "상태를 회복시켜 줘요!"]
+        };
+
+        function gameTick() {
+            if (pet.isSleeping) {
+                pet.energy = Math.min(100, pet.energy + 5);
+                pet.hunger = Math.max(0, pet.hunger - 1);
+            } else {
+                pet.hunger = Math.max(0, pet.hunger - 2);
+                pet.happiness = Math.max(0, pet.happiness - 1);
+                pet.energy = Math.max(0, pet.energy - 1.5);
+                
+                if (Math.random() < 0.25 && pet.cleanliness > 20) {
+                    pet.cleanliness = Math.max(0, pet.cleanliness - 10);
+                    if (pet.cleanliness < 70 && pet.poopCount < 3) {
+                        pet.poopCount++;
+                        renderPoops();
+                    }
+                }
+            }
+
+            // 상태 체크 후 성장 정지 판정 (정지 진입 시 알림 띄움)
+            checkGrowthCondition(true);
+
+            // 성장 정지 상태가 아닐 때만 성장 시간 증가 및 레벨업 체크
+            if (!pet.isStunted) {
+                pet.ageSeconds += 3;
+
+                let timeBasedLevel = 1 + Math.floor(pet.ageSeconds / 600);
+                if (timeBasedLevel > 4) timeBasedLevel = 4;
+                if (timeBasedLevel > pet.level) {
+                    const oldLevel = pet.level;
+                    pet.level = timeBasedLevel;
+                    if (pet.level === 4 && oldLevel < 4) {
+                        showMsg("🏆 [축하합니다!] 햄북이가 최고 등급인 'LV.4 대도서관 마스터'로 최종 진화했습니다! 👑✨");
+                        triggerEffect("🌟");
+                    } else {
+                        showMsg(`🎉 축하합니다! 햄북이가 ${stages[pet.level-1].title}(으)로 진화했습니다!`);
+                        triggerEffect("🌟");
+                    }
+                }
+            }
+
+            if ((pet.hunger === 0 && pet.happiness === 0) || pet.cleanliness === 0) {
+                pet.isSick = true;
+            } else {
+                pet.isSick = false;
+            }
+
+            updateUI();
+            saveGameData();
+        }
+
+        function updateUI() {
+            hungerBar.style.width = pet.hunger + '%';
+            happinessBar.style.width = pet.happiness + '%';
+            energyBar.style.width = pet.energy + '%';
+            cleanBar.style.width = pet.cleanliness + '%';
+
+            hungerVal.innerText = Math.round(pet.hunger) + '%';
+            happinessVal.innerText = Math.round(pet.happiness) + '%';
+            energyVal.innerText = Math.round(pet.energy) + '%';
+            cleanVal.innerText = Math.round(pet.cleanliness) + '%';
+
+            // 20% 이하인 게이지 텍스트 빨간색으로 강조
+            hungerVal.className = pet.hunger <= 20 ? "text-red-600 font-extrabold" : "";
+            happinessVal.className = pet.happiness <= 20 ? "text-red-600 font-extrabold" : "";
+            energyVal.className = pet.energy <= 20 ? "text-red-600 font-extrabold" : "";
+            cleanVal.className = pet.cleanliness <= 20 ? "text-red-600 font-extrabold" : "";
+
+            coinDisplay.innerText = `🪙 ${pet.coins}G`;
+
+            const minutes = Math.floor(pet.ageSeconds / 60);
+            if (pet.isStunted) {
+                gameTimeDisplay.innerHTML = `<span class="text-red-600 font-bold">성장: ${minutes}분 (정지)</span>`;
+            } else {
+                gameTimeDisplay.innerText = `성장: ${minutes}분`;
+            }
+            
+            const currentStageObj = stages[Math.min(pet.level - 1, stages.length - 1)];
+            petStageDisplay.innerText = currentStageObj.title;
+
+            updateEvolutionVisuals();
+            updateExpression();
+            updateAlertBanner();
+            renderPoops();
+            renderGroupedReviews();
+            renderStackedBooks();
+        }
+
+        function renderStackedBooks() {
+            if (!pet.reviews || pet.reviews.length === 0) {
+                stackedBooksZone.innerHTML = '';
+                return;
+            }
+
+            const uniqueTitles = [...new Set(pet.reviews.map(item => item.title))];
+            const visibleTitles = uniqueTitles.slice(0, 6).reverse();
+            
+            let html = '';
+            const colors = ['bg-red-400', 'bg-blue-400', 'bg-green-400', 'bg-purple-400', 'bg-amber-400', 'bg-pink-400'];
+
+            visibleTitles.forEach((title, index) => {
+                const colorClass = colors[index % colors.length];
+                html += `<div class="w-7 h-2 ${colorClass} rounded-sm border border-gray-900 shadow-sm flex items-center justify-center text-[7px] font-bold text-white truncate px-0.5" title="${title}">
+                    📖
+                </div>`;
+            });
+
+            stackedBooksZone.innerHTML = html;
+        }
+
+        function renderGroupedReviews() {
+            if (!pet.reviews || pet.reviews.length === 0) {
+                reviewListContainer.innerHTML = '<p class="text-gray-400 italic text-center">아직 작성된 독서 감상평이 없어요.</p>';
+                return;
+            }
+
+            let grouped = {};
+            pet.reviews.forEach(item => {
+                if (!grouped[item.title]) {
+                    grouped[item.title] = [];
+                }
+                grouped[item.title].push(item);
+            });
+
+            let html = '';
+            for (let title in grouped) {
+                const isOpen = openBooks[title] || false;
+                const reviews = grouped[title];
+
+                html += `<div class="border-2 border-gray-800 rounded-lg bg-white/80 mb-1 overflow-hidden">
+                    <div onclick="toggleBook('${title.replace(/'/g, "\\'")}')" class="flex justify-between items-center p-1.5 bg-purple-100 cursor-pointer hover:bg-purple-200 transition-colors">
+                        <span class="font-bold text-purple-900 text-xs">📚 [${title}] <span class="text-[10px] font-normal text-purple-700">(${reviews.length}개)</span></span>
+                        <span class="text-[10px] font-bold text-gray-700">${isOpen ? '▲' : '▼'}</span>
+                    </div>`;
+
+                if (isOpen) {
+                    html += `<div class="p-1.5 space-y-1 bg-white border-t border-gray-200">`;
+                    reviews.forEach(r => {
+                        html += `<div class="text-[10px] text-gray-700 border-b border-gray-100 pb-0.5 flex justify-between items-center">
+                            <span>- ${r.review}</span>
+                            <span class="text-[8px] text-gray-400">${r.date}</span>
+                        </div>`;
+                    });
+                    html += `</div>`;
+                }
+
+                html += `</div>`;
+            }
+
+            reviewListContainer.innerHTML = html;
+        }
+
+        function toggleBook(title) {
+            openBooks[title] = !openBooks[title];
+            renderGroupedReviews();
+        }
+
+        function updateEvolutionVisuals() {
+            const accGlasses = document.getElementById('acc-glasses');
+            const accHatBook = document.getElementById('acc-hat-book');
+            const accCrown = document.getElementById('acc-crown');
+
+            accGlasses.style.display = 'none';
+            accHatBook.style.display = 'none';
+            accCrown.style.display = 'none';
+
+            if (pet.level === 2) {
+                accGlasses.style.display = 'block';
+            } else if (pet.level === 3) {
+                accGlasses.style.display = 'block';
+                accHatBook.style.display = 'block';
+            } else if (pet.level >= 4) {
+                accGlasses.style.display = 'block';
+                accHatBook.style.display = 'block';
+                accCrown.style.display = 'block';
+            }
+        }
+
+        function updateExpression() {
+            if (pet.isSleeping) {
+                roomContainer.className = "w-full h-56 bg-slate-900 rounded-2xl border-4 border-gray-800 relative flex flex-col items-center justify-center mb-3 overflow-hidden transition-colors duration-500";
+                roomEffect.innerHTML = '<span class="text-blue-200 animate-pulse text-xl font-bold">Z z z ...</span>';
+                petMouth.setAttribute("d", "M55,75 Q60,70 65,75");
+                characterWrapper.className = "relative flex flex-col items-center z-10 mt-4";
+                speechBubble.innerText = pet.isStunted ? "자고 있지만 배고프거나 지저분해서 성장이 멈췄어..." : "꾸벅꾸벅 잠자는 중...";
+                return;
+            } else {
+                roomContainer.className = "w-full h-56 bg-amber-100 rounded-2xl border-4 border-gray-800 relative flex flex-col items-center justify-center mb-3 overflow-hidden transition-colors duration-500";
+                roomEffect.innerHTML = '';
+                characterWrapper.className = "relative flex flex-col items-center animate-float cursor-pointer z-10 mt-4";
+            }
+
+            if (pet.isSick) {
+                petMouth.setAttribute("d", "M55,75 Q60,70 65,75");
+                speechBubble.innerText = dialogues.sick[Math.floor(Math.random() * dialogues.sick.length)];
+                characterWrapper.classList.add('animate-shake');
+            } else if (pet.isStunted) {
+                petMouth.setAttribute("d", "M55,74 Q60,70 65,74");
+                speechBubble.innerText = dialogues.stunted[Math.floor(Math.random() * dialogues.stunted.length)];
+                characterWrapper.classList.remove('animate-shake');
+            } else if (pet.hunger < 30) {
+                petMouth.setAttribute("d", "M55,74 Q60,70 65,74");
+                speechBubble.innerText = dialogues.hungry[Math.floor(Math.random() * dialogues.hungry.length)];
+                characterWrapper.classList.remove('animate-shake');
+            } else if (pet.cleanliness < 40) {
+                speechBubble.innerText = dialogues.clean[Math.floor(Math.random() * dialogues.clean.length)];
+                characterWrapper.classList.remove('animate-shake');
+            } else if (pet.happiness < 30) {
+                petMouth.setAttribute("d", "M55,74 Q60,72 65,74");
+                speechBubble.innerText = dialogues.unhappy[Math.floor(Math.random() * dialogues.unhappy.length)];
+                characterWrapper.classList.remove('animate-shake');
+            } else {
+                petMouth.setAttribute("d", "M55,73 Q60,78 65,73");
+                if (Math.random() < 0.05) {
+                    speechBubble.innerText = dialogues.normal[Math.floor(Math.random() * dialogues.normal.length)];
+                }
+                characterWrapper.classList.remove('animate-shake');
+            }
+        }
+
+        function updateAlertBanner() {
+            if (pet.isStunted) {
+                statusAlert.innerText = "⚠️ 상태 부족(2개 이상 20%↓)! 성장을 하지 못해요!";
+                statusAlert.className = "absolute bottom-2 bg-red-200/95 border border-red-600 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-red-900 z-20";
+                statusAlert.classList.remove('hidden');
+            } else if (pet.isSick) {
+                statusAlert.innerText = "🚨 햄북이가 아파요! 치료가 필요합니다!";
+                statusAlert.className = "absolute bottom-2 bg-amber-200/95 border border-amber-500 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-amber-900 z-20";
+                statusAlert.classList.remove('hidden');
+            } else if (pet.hunger < 25) {
+                statusAlert.innerText = "🍖 햄북이가 많이 배고파해요!";
+                statusAlert.className = "absolute bottom-2 bg-amber-200/95 border border-amber-500 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-amber-900 z-20";
+                statusAlert.classList.remove('hidden');
+            } else if (pet.cleanliness < 40) {
+                statusAlert.innerText = "✨ 도서관 정리가 필요해요!";
+                statusAlert.className = "absolute bottom-2 bg-amber-200/95 border border-amber-500 px-2.5 py-0.5 rounded-lg text-[11px] font-bold text-amber-900 z-20";
+                statusAlert.classList.remove('hidden');
+            } else {
+                statusAlert.classList.add('hidden');
+            }
+        }
+
+        function renderPoops() {
+            let html = '';
+            for (let i = 0; i < pet.poopCount; i++) {
+                html += '<span class="text-lg animate-bounce-short">🧹</span>';
+            }
+            poopZone.innerHTML = html;
+        }
+
+        function submitReview() {
+            const titleInput = document.getElementById('book-title-input');
+            const reviewInput = document.getElementById('book-review-input');
+            
+            const title = titleInput.value.trim();
+            const review = reviewInput.value.trim();
+
+            if (!title || !review) {
+                showMsg("책 제목과 한 줄 감상평을 모두 입력해주세요!");
+                return;
+            }
+
+            if (review.includes("가나다라마부사")) {
+                if (pet.level < 4) {
+                    const oldLevel = pet.level;
+                    pet.level++;
+                    if (pet.level === 4 && oldLevel < 4) {
+                        showMsg("🏆 [축하합니다!] 비밀 치트키 감지! 햄북이가 'LV.4 대도서관 마스터'로 최종 진화했습니다! 👑✨");
+                    } else {
+                        showMsg(`✨ 비밀 단어 감지! 햄북이가 즉시 ${stages[pet.level-1].title}(으)로 진화했습니다!`);
+                    }
+                } else {
+                    showMsg("이미 최고 등급(LV.4)에 도달해 있습니다!");
+                }
+            }
+
+            pet.reviews.unshift({
+                title: title,
+                review: review,
+                date: new Date().toLocaleDateString()
+            });
+
+            if (pet.reviews.length > 20) {
+                pet.reviews.pop();
+            }
+
+            pet.coins += 10;
+            pet.happiness = Math.min(100, pet.happiness + 15);
+            checkGrowthCondition(false);
+
+            openBooks[title] = true;
+
+            titleInput.value = '';
+            reviewInput.value = '';
+
+            speechBubble.innerText = `"${title}" 기록 완료! 📖`;
+            triggerEffect("🪙");
+            updateUI();
+            saveGameData();
+        }
+
+        function feedPet() {
+            if (pet.isSleeping) {
+                showMsg("자는 아이를 깨우지 마세요! 💤");
+                return;
+            }
+            if (pet.coins < 15) {
+                showMsg("코인이 부족해요! 감상평을 남겨 모아보세요.");
+                return;
+            }
+
+            pet.coins -= 15;
+            pet.hunger = Math.min(100, pet.hunger + 30);
+            pet.happiness = Math.min(100, pet.happiness + 5);
+            checkGrowthCondition(false);
+            
+            speechBubble.innerText = pet.isStunted ? "맛있지만 다른 상태도 챙겨줘!" : "냠냠! 간식 정말 맛있다~ 😋";
+            triggerEffect("🍖");
+            updateUI();
+            saveGameData();
+        }
+
+        function playWithPet() {
+            if (pet.isSleeping) {
+                showMsg("자는 동안에는 책을 읽을 수 없어요! 💤");
+                return;
+            }
+            if (pet.energy < 15) {
+                showMsg("에너지가 부족해요. 재워주세요!");
+                return;
+            }
+
+            pet.happiness = Math.min(100, pet.happiness + 25);
+            pet.energy = Math.max(0, pet.energy - 15);
+            pet.hunger = Math.max(0, pet.hunger - 10);
+            checkGrowthCondition(true);
+
+            speechBubble.innerText = "재미있는 책 탐색 완료! 📚";
+            triggerEffect("📖");
+            updateUI();
+            saveGameData();
+        }
+
+        function sleepPet() {
+            pet.isSleeping = !pet.isSleeping;
+            if (pet.isSleeping) {
+                speechBubble.innerText = "꿀잠 자는 중...";
+            } else {
+                speechBubble.innerText = "개운하게 일어났어! ✨";
+            }
+            updateUI();
+            saveGameData();
+        }
+
+        function cleanPet() {
+            if (pet.isSleeping) {
+                showMsg("자는 동안에는 청소할 수 없어요! 💤");
+                return;
+            }
+            pet.cleanliness = 100;
+            pet.poopCount = 0;
+            poopZone.innerHTML = '';
+            pet.happiness = Math.min(100, pet.happiness + 10);
+            checkGrowthCondition(false);
+
+            speechBubble.innerText = "도서관이 반짝반짝! ✨";
+            triggerEffect("🫧");
+            updateUI();
+            saveGameData();
+        }
+
+        function pokePet() {
+            if (pet.isSleeping) return;
+            pet.happiness = Math.min(100, pet.happiness + 3);
+            checkGrowthCondition(false);
+            speechBubble.innerText = "쓰담쓰담 고마워~ 😆";
+            updateUI();
+            saveGameData();
+        }
+
+        function triggerEffect(emoji) {
+            roomEffect.innerHTML = `<span class="text-4xl animate-bounce">${emoji}</span>`;
+            setTimeout(() => {
+                roomEffect.innerHTML = '';
+            }, 1000);
+        }
+
+        function resetGame() {
+            if (confirm("정말로 모든 게임 데이터를 초기화하시겠습니까?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                pet = {
+                    name: "햄북이",
+                    level: 1,
+                    hunger: 80,
+                    happiness: 80,
+                    energy: 80,
+                    cleanliness: 100,
+                    coins: 100,
+                    ageSeconds: 0,
+                    isSleeping: false,
+                    isSick: false,
+                    isStunted: false,
+                    poopCount: 0,
+                    lastSavedTime: Date.now(),
+                    reviews: []
+                };
+                openBooks = {};
+                poopZone.innerHTML = '';
+                updateUI();
+                showMsg("데이터가 초기화되었습니다!");
+            }
+        }
+
+        window.onload = function() {
+            loadGameData();
+            updateUI();
+            setInterval(gameTick, 3000);
+        };
+    </script>
+</body>
+</html>
